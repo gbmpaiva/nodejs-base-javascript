@@ -1,0 +1,90 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String      @id @default(uuid())
+  name       String
+  email      String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  isDelete   Boolean     @default(false)
+
+  roles      RoleUser[]
+  schedulings Scheduling[]
+}
+
+model Role {
+  id         String      @id @default(uuid())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  isDelete   Boolean     @default(false)
+
+  users      RoleUser[]
+}
+
+model RoleUser {
+  id         String   @id @default(uuid())
+  userId     String
+  roleId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isDelete   Boolean  @default(false)
+
+  user       User     @relation(fields: [userId], references: [id])
+  role       Role     @relation(fields: [roleId], references: [id])
+}
+
+model Client {
+  id         String      @id @default(uuid())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  isDelete   Boolean     @default(false)
+
+  projects   Project[]
+  schedulings Scheduling[]
+}
+
+model Project {
+  id         String      @id @default(uuid())
+  name       String
+  clientId   String
+  totalHours Int
+  hoursSpent Int
+  hoursOver  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isDelete   Boolean  @default(false)
+
+  client     Client      @relation(fields: [clientId], references: [id])
+  schedulings Scheduling[]
+}
+
+model Scheduling {
+  id          String    @id @default(uuid())
+  clientId    String
+  userId      String
+  projectId   String
+  date        DateTime
+  hoursPreview      Int
+  hoursReal         Int
+  break       Int
+  title       String
+  link        String?
+  notes       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isDelete   Boolean  @default(false)
+  isPointed  Boolean  @default(false)
+
+  user        User      @relation(fields: [userId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id])
+  project     Project   @relation(fields: [projectId], references: [id])
+}
